@@ -27,41 +27,74 @@ class ARFindRoutesViewController: UIViewController {
         super.viewDidLoad()
 
         // Do any additional setup after loading the view.
+        sceneView.run()
         view.addSubview(sceneView)
         view.addSubview(closeButton)
+        
+        DataManager.shared.delegate = self
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        sceneView.run()
         
-        var i = 0
         for route in routes {
             
-            guard let start = ((((route["legs"] as! [[String: AnyObject]])[i] ))["start_location"])  as? [String: AnyObject] else { return }
+            guard let legs = route["legs"] as? [[String: AnyObject]] else {
+                return
+            }
+            var i = 0
+            for leg in legs {
+                
+                guard let steps = leg["steps"] as? [[String: AnyObject]] else { return }
+                
+                for step in steps {
+                    guard let start = step["start_location"] as? [String: AnyObject] else {return}
+                    guard let end = step["end_location"] as? [String: AnyObject] else {return}
+                    
+                    guard let sLat = start["lat"] as? Double else { return }
+                    
+                    guard let sLong = start["lng"] as? Double else { return }
+                    
+                    guard let eLat = end["lat"] as? Double else { return }
+                    
+                    guard let eLong = end["lng"] as? Double else { return }
+                    
+                    let startLocation = NHLocation(latitude: sLat, longitude: sLong)
+                    let endLocation = NHLocation(latitude: eLat, longitude: eLong)
+                    
+                    let pinLocationNode1 = LocationAnnotationNode(location: CLLocation.init(coordinate: startLocation.cllocation2D(), altitude: 0) , width: 150, height: 200, texture: #imageLiteral(resourceName: "Start"))
+                    sceneView.addLocationNodeWithConfirmedLocation(locationNode: pinLocationNode1)
+                    
+                    let pinLocationNode2 = LocationAnnotationNode(location: CLLocation.init(coordinate: endLocation.cllocation2D(), altitude: 0), width: 150, height: 200, texture: #imageLiteral(resourceName: "End"))
+                    sceneView.addLocationNodeWithConfirmedLocation(locationNode: pinLocationNode2)
+                }
+                
+            }
             
-            guard let end = ((((route["legs"] as! [[String: AnyObject]])[i] ))["end_location"]) as? [String: AnyObject] else { return }
+//            guard let start = ((((route["legs"] as! [[String: AnyObject]])[i] ))["start_location"])  as? [String: AnyObject] else { return }
+//
+//            guard let end = ((((route["legs"] as! [[String: AnyObject]])[i] ))["end_location"]) as? [String: AnyObject] else { return }
+//
+//            guard let sLat = start["lat"] as? Double else { return }
+//
+//            guard let sLong = start["lng"] as? Double else { return }
+//
+//            guard let eLat = end["lat"] as? Double else { return }
+//
+//            guard let eLong = end["lng"] as? Double else { return }
             
-            guard let sLat = start["lat"] as? Double else { return }
             
-            guard let sLong = start["lng"] as? Double else { return }
-            
-            guard let eLat = end["lat"] as? Double else { return }
-            
-            guard let eLong = end["lng"] as? Double else { return }
-            
-            
-            let startLocation = NHLocation(latitude: sLat, longitude: sLong)
-            let endLocation = NHLocation(latitude: eLat, longitude: eLong)
-            
-            let pinLocationNode1 = LocationAnnotationNode(location: CLLocation.init(coordinate: startLocation.cllocation2D(), altitude: 0) , width: 150, height: 200, texture: #imageLiteral(resourceName: "Start"))
-            sceneView.addLocationNodeWithConfirmedLocation(locationNode: pinLocationNode1)
-            
-            let pinLocationNode2 = LocationAnnotationNode(location: CLLocation.init(coordinate: endLocation.cllocation2D(), altitude: 0), width: 150, height: 200, texture: #imageLiteral(resourceName: "End"))
-            sceneView.addLocationNodeWithConfirmedLocation(locationNode: pinLocationNode2)
-            
-            i += 1
+//            let startLocation = NHLocation(latitude: sLat, longitude: sLong)
+//            let endLocation = NHLocation(latitude: eLat, longitude: eLong)
+//            
+//            let pinLocationNode1 = LocationAnnotationNode(location: CLLocation.init(coordinate: startLocation.cllocation2D(), altitude: 0) , width: 150, height: 200, texture: #imageLiteral(resourceName: "Start"))
+//            sceneView.addLocationNodeWithConfirmedLocation(locationNode: pinLocationNode1)
+//            
+//            let pinLocationNode2 = LocationAnnotationNode(location: CLLocation.init(coordinate: endLocation.cllocation2D(), altitude: 0), width: 150, height: 200, texture: #imageLiteral(resourceName: "End"))
+//            sceneView.addLocationNodeWithConfirmedLocation(locationNode: pinLocationNode2)
+//            
+//            i += 1
         }
         
     }
@@ -96,4 +129,20 @@ class ARFindRoutesViewController: UIViewController {
     }
     */
 
+}
+
+extension ARFindRoutesViewController : DataManagerDelegate {
+    func dataManager(didUpdate location: NHLocation) {
+        
+    }
+    
+    func dataDidLoad() {
+        
+    }
+    
+    func dataManager(didGet routes: [[String : AnyObject]]) {
+        
+    }
+    
+    
 }
